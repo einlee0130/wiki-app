@@ -14,7 +14,6 @@ export default function Home() {
 
   const [theme, setTheme] = useState("pink");
 
-  // 저장된 테마 불러오기
   useEffect(() => {
     const savedTheme = localStorage.getItem("wiki-theme");
 
@@ -23,7 +22,6 @@ export default function Home() {
     }
   }, []);
 
-  // 테마 저장
   useEffect(() => {
     localStorage.setItem("wiki-theme", theme);
   }, [theme]);
@@ -59,6 +57,16 @@ export default function Home() {
   const [newContent, setNewContent] = useState("");
   const [creatingDocument, setCreatingDocument] = useState(false);
 
+  // 현재 문서를 부모로 사용할지
+  const [creatingChild, setCreatingChild] = useState(false);
+
+  // =====================================================
+  // CHILD DOCUMENTS
+  // =====================================================
+
+  const [childDocuments, setChildDocuments] = useState([]);
+  const [loadingChildren, setLoadingChildren] = useState(false);
+
   // =====================================================
   // URL
   // =====================================================
@@ -67,6 +75,35 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
 
     return params.get("doc") || "main";
+  }
+
+  // =====================================================
+  // LOAD CHILD DOCUMENTS
+  // =====================================================
+
+  async function loadChildDocuments(parentSlug) {
+    if (!parentSlug) {
+      setChildDocuments([]);
+      return;
+    }
+
+    setLoadingChildren(true);
+
+    const { data, error } = await supabase
+      .from("documents")
+      .select("id, title, slug, parent_slug")
+      .eq("parent_slug", parentSlug)
+      .order("title", { ascending: true });
+
+    if (error) {
+      console.error("하위 문서 불러오기 실패:", error);
+      setChildDocuments([]);
+      setLoadingChildren(false);
+      return;
+    }
+
+    setChildDocuments(data || []);
+    setLoadingChildren(false);
   }
 
   // =====================================================
@@ -95,17 +132,20 @@ export default function Home() {
 
     if (!data || data.length === 0) {
       setError(`"${slug}" 문서를 찾을 수 없습니다.`);
-
       setLoading(false);
 
       return;
     }
 
-    setDocument(data[0]);
+    const target = data[0];
+
+    setDocument(target);
 
     setSearchText("");
     setSearchResults([]);
     setShowSuggestions(false);
+
+    await loadChildDocuments(target.slug);
 
     setLoading(false);
   }
@@ -171,7 +211,7 @@ export default function Home() {
   function scrollToHeading(id) {
     setTimeout(() => {
       const element =
-        document.getElementById(id);
+        window.document.getElementById(id);
 
       if (!element) return;
 
@@ -301,6 +341,8 @@ export default function Home() {
     setSearchResults([]);
     setShowSuggestions(false);
 
+    await loadChildDocuments(target.slug);
+
     setLoading(false);
 
     window.scrollTo({
@@ -351,6 +393,8 @@ export default function Home() {
 
     setDocument(target);
     setEditing(false);
+
+    await loadChildDocuments(target.slug);
 
     window.scrollTo({
       top: 0,
@@ -451,7 +495,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // NEW DOCUMENT
+  // OPEN CREATE DOCUMENT
   // =====================================================
 
   function openCreateDocument() {
@@ -459,6 +503,22 @@ export default function Home() {
     setNewSlug("");
     setNewContent("");
 
+    setCreatingChild(false);
+    setCreating(true);
+  }
+
+  // =====================================================
+  // OPEN CREATE CHILD DOCUMENT
+  // =====================================================
+
+  function openCreateChildDocument() {
+    if (!document) return;
+
+    setNewTitle("");
+    setNewSlug("");
+    setNewContent("");
+
+    setCreatingChild(true);
     setCreating(true);
   }
 
@@ -466,7 +526,12 @@ export default function Home() {
     if (creatingDocument) return;
 
     setCreating(false);
+    setCreatingChild(false);
   }
+
+  // =====================================================
+  // CREATE DOCUMENT
+  // =====================================================
 
   async function createDocument() {
     const title = newTitle.trim();
@@ -493,8 +558,15 @@ export default function Home() {
       return;
     }
 
+    if (creatingChild && !document) {
+      alert("부모 문서를 찾을 수 없습니다.");
+
+      return;
+    }
+
     setCreatingDocument(true);
 
+    // slug 중복 확인
     const {
       data: existing,
       error: checkError,
@@ -525,12 +597,25 @@ export default function Home() {
       return;
     }
 
+    // ===================================================
+    // 부모 slug 결정
+    // ===================================================
+
+    const parentSlug =
+      creatingChild
+        ? document.slug
+        : null;
+
     const { data, error } = await supabase
       .from("documents")
       .insert({
         title,
         slug,
         content,
+
+        // 하위 문서면 현재 문서 slug
+        // 일반 문서면 null
+        parent_slug: parentSlug,
       })
       .select("*");
 
@@ -558,6 +643,7 @@ export default function Home() {
     const created = data[0];
 
     setCreating(false);
+    setCreatingChild(false);
     setCreatingDocument(false);
 
     setNewTitle("");
@@ -578,10 +664,25 @@ export default function Home() {
     setDocument(created);
     setEditing(false);
 
+    // 새로 만든 문서의 하위 문서도 불러오기
+    await loadChildDocuments(
+      created.slug
+    );
+
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
+  }
+
+  // =====================================================
+  // OPEN CHILD DOCUMENT
+  // =====================================================
+
+  async function openChildDocument(child) {
+    await navigateToDocument(
+      child.slug
+    );
   }
 
   // =====================================================
@@ -965,12 +1066,26 @@ export default function Home() {
               <div>
 
                 <div className="document-label">
-                  NEW WIKI DOCUMENT
+                  {creatingChild
+                    ? "NEW CHILD DOCUMENT"
+                    : "NEW WIKI DOCUMENT"}
                 </div>
 
                 <h2>
-                  새 문서 만들기
+                  {creatingChild
+                    ? "하위 문서 만들기"
+                    : "새 문서 만들기"}
                 </h2>
+
+                {creatingChild &&
+                  document && (
+                    <div className="parent-document-info">
+                      📂 부모 문서:{" "}
+                      <strong>
+                        {document.title}
+                      </strong>
+                    </div>
+                  )}
 
               </div>
 
@@ -1022,7 +1137,7 @@ export default function Home() {
                       )
                   )
                 }
-                placeholder="예: gsos"
+                placeholder="예: gsos-history"
               />
 
               <div className="slug-help">
@@ -1076,6 +1191,8 @@ export default function Home() {
               >
                 {creatingDocument
                   ? "생성 중..."
+                  : creatingChild
+                  ? "하위 문서 만들기"
                   : "문서 만들기"}
               </button>
 
@@ -1252,6 +1369,69 @@ export default function Home() {
         ================================================= */}
 
         <aside className="sidebar">
+
+          {/* CHILD DOCUMENTS */}
+
+          <div className="sidebar-card child-document-card">
+
+            <div className="sidebar-title">
+              하위 문서
+            </div>
+
+            {loadingChildren ? (
+              <div className="child-document-loading">
+                불러오는 중...
+              </div>
+            ) : childDocuments.length >
+              0 ? (
+              <div className="child-document-list">
+
+                {childDocuments.map(
+                  (child) => (
+                    <button
+                      key={child.id}
+                      type="button"
+                      className="child-document-item"
+                      onClick={() =>
+                        openChildDocument(
+                          child
+                        )
+                      }
+                    >
+                      <span className="child-document-icon">
+                        📄
+                      </span>
+
+                      <span className="child-document-title">
+                        {child.title}
+                      </span>
+
+                      <span className="child-document-arrow">
+                        ›
+                      </span>
+                    </button>
+                  )
+                )}
+
+              </div>
+            ) : (
+              <div className="no-child-documents">
+                아직 하위 문서가 없습니다.
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="child-document-create-button"
+              onClick={
+                openCreateChildDocument
+              }
+            >
+              ＋ 하위 문서 만들기
+            </button>
+
+          </div>
+
 
           {/* TOC */}
 

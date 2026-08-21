@@ -1409,3 +1409,142 @@ button:disabled {
     display: none;
   }
 }
+
+/* =========================================================
+   CHILD DOCUMENTS
+========================================================= */
+
+.child-document-card {
+  overflow: hidden;
+}
+
+.child-document-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.child-document-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 10px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #444;
+
+  text-align: left;
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.child-document-item:hover {
+  background: var(--point-light);
+  color: var(--point-hover);
+}
+
+.child-document-icon {
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+
+.child-document-title {
+  flex: 1;
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.child-document-arrow {
+  flex: 0 0 auto;
+
+  color: #aaa;
+
+  font-size: 16px;
+}
+
+.child-document-create-button {
+  width: 100%;
+
+  margin-top: 5px;
+  padding: 9px 10px;
+
+  border: 1px dashed var(--border);
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: var(--point);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.child-document-create-button:hover {
+  background: var(--point-light);
+  border-color: var(--point);
+}
+
+.no-child-documents,
+.child-document-loading {
+  padding: 8px 10px 10px;
+
+  color: #999;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.parent-document-info {
+  margin-top: 8px;
+
+  padding: 7px 10px;
+
+  border-radius: 7px;
+
+  background: var(--point-light);
+
+  color: #777;
+
+  font-size: 11px;
+}
+
+.parent-document-info strong {
+  color: var(--point-hover);
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 800px) {
+  .child-document-card {
+    display: block;
+  }
+
+  .child-document-list {
+    max-height: 240px;
+    overflow-y: auto;
+  }
+}

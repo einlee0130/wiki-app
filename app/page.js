@@ -11,31 +11,85 @@ export default function Home() {
   const [theme, setTheme] = useState("pink");
 
   useEffect(() => {
-    async function getMainDocument() {
-      const { data, error } = await supabase
-        .from("documents")
-        .select("*")
-        .eq("slug", "main")
-        .limit(1);
+    loadDocument("main");
+  }, []);
 
-      if (error) {
-        setError(error.message);
-        setLoading(false);
-        return;
-      }
+  async function loadDocument(slug) {
+    setLoading(true);
+    setError("");
 
-      if (!data || data.length === 0) {
-        setError("main 문서를 찾을 수 없습니다.");
-        setLoading(false);
-        return;
-      }
+    const { data, error } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("slug", slug)
+      .limit(1);
 
-      setDocument(data[0]);
+    if (error) {
+      setError(error.message);
       setLoading(false);
+      return;
     }
 
-    getMainDocument();
-  }, []);
+    if (!data || data.length === 0) {
+      setError("문서를 찾을 수 없습니다.");
+      setLoading(false);
+      return;
+    }
+
+    setDocument(data[0]);
+    setLoading(false);
+  }
+
+  // [[문서명]]을 클릭 가능한 링크로 변환
+  function renderContent(content) {
+    const parts = content.split(/(\[\[.*?\]\])/g);
+
+    return parts.map((part, index) => {
+      const match = part.match(/^\[\[(.*?)\]\]$/);
+
+      if (!match) {
+        return <span key={index}>{part}</span>;
+      }
+
+      const title = match[1];
+
+      return (
+        <button
+          key={index}
+          type="button"
+          className="wiki-link"
+          onClick={() => handleWikiLink(title)}
+        >
+          {title}
+        </button>
+      );
+    });
+  }
+
+  async function handleWikiLink(title) {
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("title", title)
+      .limit(1);
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setError(`"${title}" 문서를 찾을 수 없습니다.`);
+      setLoading(false);
+      return;
+    }
+
+    setDocument(data[0]);
+    setLoading(false);
+  }
 
   if (loading) {
     return (
@@ -53,6 +107,14 @@ export default function Home() {
           <span>⚠️</span>
           <h1>문서를 불러오지 못했어요</h1>
           <p>{error}</p>
+
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => loadDocument("main")}
+          >
+            메인으로 돌아가기
+          </button>
         </div>
       </main>
     );
@@ -62,10 +124,14 @@ export default function Home() {
     <main className={`wiki-app theme-${theme}`}>
       <header className="header">
         <div className="header-inner">
-          <Link href="/" className="logo">
+          <button
+            type="button"
+            className="logo"
+            onClick={() => loadDocument("main")}
+          >
             <span className="logo-icon">✦</span>
             <span className="logo-text">여름위키</span>
-          </Link>
+          </button>
 
           <div className="search-box">
             <span className="search-icon">⌕</span>
@@ -94,9 +160,16 @@ export default function Home() {
       <div className="page-container">
         <div className="content">
           <div className="breadcrumb">
-            <Link href="/">여름위키</Link>
+            <button
+              type="button"
+              onClick={() => loadDocument("main")}
+            >
+              여름위키
+            </button>
+
             <span>›</span>
-            <span>메인</span>
+
+            <span>{document.title}</span>
           </div>
 
           <article className="document">
@@ -117,7 +190,7 @@ export default function Home() {
             <div className="document-divider" />
 
             <div className="document-content">
-              {document.content}
+              {renderContent(document.content)}
             </div>
           </article>
         </div>
@@ -146,9 +219,12 @@ export default function Home() {
               여름위키
             </div>
 
-            <Link href="/" className="sidebar-link">
+            <button
+              type="button"
+              onClick={() => loadDocument("main")}
+            >
               🏠 메인 페이지
-            </Link>
+            </button>
 
             <button type="button">
               ＋ 새 문서

@@ -654,3 +654,145 @@ a {
 .breadcrumb button:hover {
   color: var(--point);
 }
+
+/* =========================
+   EDITOR
+========================= */
+
+.document-title-area {
+  min-width: 0;
+  flex: 1;
+}
+
+.edit-title-input {
+  width: 100%;
+  max-width: 600px;
+
+  padding: 8px 10px;
+
+  border: 2px solid var(--point);
+  border-radius: 10px;
+
+  outline: none;
+
+  background: white;
+  color: var(--text);
+
+  font-family: inherit;
+  font-size: 32px;
+  font-weight: 800;
+
+  letter-spacing: -1.5px;
+}
+
+.edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+.cancel-button,
+.save-button {
+  padding: 9px 14px;
+
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cancel-button {
+  background: #f2f4f6;
+  color: #6b7280;
+}
+
+.cancel-button:hover {
+  background: #e9edf2;
+}
+
+.save-button {
+  background: var(--point);
+  color: white;
+
+  box-shadow: 0 5px 14px rgba(255, 111, 157, 0.18);
+}
+
+.save-button:hover {
+  background: var(--point-hover);
+}
+
+.save-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editor-area {
+  width: 100%;
+}
+
+.editor-help {
+  margin-bottom: 12px;
+
+  padding: 12px 14px;
+
+  border-radius: 10px;
+
+  background: var(--point-light);
+
+  color: #6b7280;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.editor-help strong {
+  color: var(--point);
+}
+
+.document-editor {
+  display: block;
+
+  width: 100%;
+  min-height: 400px;
+
+  padding: 18px;
+
+  resize: vertical;
+
+  border: 1px solid var(--border);
+  border-radius: 13px;
+
+  outline: none;
+
+  background: #fafbfc;
+  color: var(--text);
+
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.8;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.document-editor:focus {
+  border-color: var(--point);
+
+  box-shadow:
+    0 0 0 3px var(--point-light);
+
+  background: white;
+}
+
+.save-message {
+  margin-top: 10px;
+
+  color: var(--point);
+
+  font-size: 13px;
+  font-weight: 600;
+}

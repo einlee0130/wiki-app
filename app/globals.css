@@ -1258,3 +1258,154 @@ button:disabled {
     max-height: calc(100vh - 20px);
   }
 }
+
+/* =========================================================
+   WIKI TABLE OF CONTENTS
+========================================================= */
+
+.toc-card {
+  overflow: hidden;
+}
+
+.toc-list {
+  padding: 6px 0;
+}
+
+.toc-item {
+  width: 100%;
+
+  display: block;
+
+  padding: 6px 12px;
+
+  background: transparent;
+
+  color: #555;
+
+  text-align: left;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+
+  border: 0;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.toc-item:hover {
+  background: var(--point-light);
+
+  color: var(--point-hover);
+}
+
+/* ## */
+
+.toc-level-2 {
+  padding-left: 12px;
+
+  font-weight: 700;
+}
+
+/* ### */
+
+.toc-level-3 {
+  padding-left: 27px;
+
+  color: #777;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   DOCUMENT HEADINGS
+========================================================= */
+
+.wiki-heading {
+  scroll-margin-top: 75px;
+
+  color: #222;
+
+  font-weight: 800;
+
+  line-height: 1.35;
+
+  letter-spacing: -0.5px;
+}
+
+.wiki-heading-2 {
+  margin: 32px 0 13px;
+
+  padding-bottom: 7px;
+
+  border-bottom: 2px solid var(--border);
+
+  font-size: 21px;
+}
+
+.wiki-heading-3 {
+  margin: 24px 0 9px;
+
+  padding-left: 10px;
+
+  border-left: 3px solid var(--point);
+
+  font-size: 17px;
+}
+
+.wiki-heading:first-child {
+  margin-top: 0;
+}
+
+.wiki-empty-line {
+  height: 12px;
+}
+
+.wiki-line {
+  min-height: 1.9em;
+}
+
+
+/* =========================================================
+   EMPTY DOCUMENT
+========================================================= */
+
+.empty-document {
+  margin: 0;
+
+  color: #999;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   THEME TRANSITION
+========================================================= */
+
+.wiki-app,
+.wiki-app .header,
+.wiki-app .document,
+.wiki-app .sidebar-card,
+.wiki-app .search-box,
+.wiki-app .search-suggestions,
+.wiki-app .new-document-box {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+
+/* =========================================================
+   MOBILE TOC
+========================================================= */
+
+@media (max-width: 800px) {
+  .toc-card {
+    display: none;
+  }
+}

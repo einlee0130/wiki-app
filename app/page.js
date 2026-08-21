@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
@@ -8,42 +8,69 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 테마
+  // =====================================================
+  // THEME
+  // =====================================================
+
   const [theme, setTheme] = useState("pink");
 
-  // 수정
+  // 저장된 테마 불러오기
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("wiki-theme");
+
+    if (savedTheme === "pink" || savedTheme === "blue") {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  // 테마 저장
+  useEffect(() => {
+    localStorage.setItem("wiki-theme", theme);
+  }, [theme]);
+
+  // =====================================================
+  // EDIT
+  // =====================================================
+
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
-  // 검색
+  // =====================================================
+  // SEARCH
+  // =====================================================
+
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // 새 문서
+  const searchTimer = useRef(null);
+
+  // =====================================================
+  // NEW DOCUMENT
+  // =====================================================
+
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [newContent, setNewContent] = useState("");
   const [creatingDocument, setCreatingDocument] = useState(false);
 
-  const searchTimer = useRef(null);
-
   // =====================================================
-  // URL에서 slug 가져오기
+  // URL
   // =====================================================
 
   function getSlugFromUrl() {
     const params = new URLSearchParams(window.location.search);
+
     return params.get("doc") || "main";
   }
 
   // =====================================================
-  // 문서 불러오기
+  // LOAD DOCUMENT
   // =====================================================
 
   async function loadDocument(slug) {
@@ -59,14 +86,18 @@ export default function Home() {
 
     if (error) {
       console.error(error);
+
       setError(error.message);
       setLoading(false);
+
       return;
     }
 
     if (!data || data.length === 0) {
       setError(`"${slug}" 문서를 찾을 수 없습니다.`);
+
       setLoading(false);
+
       return;
     }
 
@@ -80,26 +111,79 @@ export default function Home() {
   }
 
   // =====================================================
-  // 최초 실행 / 뒤로가기
+  // INITIAL LOAD / BACK BUTTON
   // =====================================================
 
   useEffect(() => {
     loadDocument(getSlugFromUrl());
 
     function handlePopState(event) {
-      const slug = event.state?.slug || getSlugFromUrl();
+      const slug =
+        event.state?.slug || getSlugFromUrl();
+
       loadDocument(slug);
     }
 
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener(
+      "popstate",
+      handlePopState
+    );
 
     return () => {
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener(
+        "popstate",
+        handlePopState
+      );
     };
   }, []);
 
   // =====================================================
-  // 검색
+  // DOCUMENT TOC
+  // =====================================================
+
+  const headings = useMemo(() => {
+    if (!document?.content) return [];
+
+    const lines = document.content.split("\n");
+
+    const result = [];
+
+    lines.forEach((line, index) => {
+      const match = line.match(
+        /^(#{2,3})\s+(.+)$/
+      );
+
+      if (!match) return;
+
+      const level = match[1].length;
+      const title = match[2].trim();
+
+      result.push({
+        id: `heading-${index}`,
+        level,
+        title,
+      });
+    });
+
+    return result;
+  }, [document]);
+
+  function scrollToHeading(id) {
+    setTimeout(() => {
+      const element =
+        document.getElementById(id);
+
+      if (!element) return;
+
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
+  }
+
+  // =====================================================
+  // SEARCH
   // =====================================================
 
   function handleSearchChange(value) {
@@ -113,6 +197,7 @@ export default function Home() {
       setSearchResults([]);
       setShowSuggestions(false);
       setSearching(false);
+
       return;
     }
 
@@ -133,8 +218,10 @@ export default function Home() {
 
     if (error) {
       console.error(error);
+
       setSearchResults([]);
       setSearching(false);
+
       return;
     }
 
@@ -158,12 +245,14 @@ export default function Home() {
     if (!searchText.trim()) return;
 
     if (searchResults.length > 0) {
-      await openSearchResult(searchResults[0]);
+      await openSearchResult(
+        searchResults[0]
+      );
     }
   }
 
   // =====================================================
-  // 문서 이동
+  // NAVIGATE DOCUMENT
   // =====================================================
 
   async function navigateToDocument(slug) {
@@ -179,12 +268,14 @@ export default function Home() {
     if (error) {
       setError(error.message);
       setLoading(false);
+
       return;
     }
 
     if (!data || data.length === 0) {
       setError(`"${slug}" 문서를 찾을 수 없습니다.`);
       setLoading(false);
+
       return;
     }
 
@@ -193,7 +284,9 @@ export default function Home() {
     const url =
       target.slug === "main"
         ? "/"
-        : `/?doc=${encodeURIComponent(target.slug)}`;
+        : `/?doc=${encodeURIComponent(
+            target.slug
+          )}`;
 
     window.history.pushState(
       { slug: target.slug },
@@ -217,7 +310,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // [[문서명]] 링크
+  // WIKI LINK
   // =====================================================
 
   async function openWikiDocument(title) {
@@ -229,11 +322,15 @@ export default function Home() {
 
     if (error) {
       setError(error.message);
+
       return;
     }
 
     if (!data || data.length === 0) {
-      alert(`"${title}" 문서를 찾을 수 없습니다.`);
+      alert(
+        `"${title}" 문서를 찾을 수 없습니다.`
+      );
+
       return;
     }
 
@@ -242,7 +339,9 @@ export default function Home() {
     const url =
       target.slug === "main"
         ? "/"
-        : `/?doc=${encodeURIComponent(target.slug)}`;
+        : `/?doc=${encodeURIComponent(
+            target.slug
+          )}`;
 
     window.history.pushState(
       { slug: target.slug },
@@ -260,7 +359,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // 메인으로
+  // HOME
   // =====================================================
 
   function goHome() {
@@ -276,7 +375,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // 수정 시작
+  // EDIT
   // =====================================================
 
   function startEditing() {
@@ -284,28 +383,24 @@ export default function Home() {
 
     setEditTitle(document.title || "");
     setEditContent(document.content || "");
+
     setSaveMessage("");
     setEditing(true);
   }
-
-  // =====================================================
-  // 수정 취소
-  // =====================================================
 
   function cancelEditing() {
     setEditing(false);
     setSaveMessage("");
   }
 
-  // =====================================================
-  // 문서 저장
-  // =====================================================
-
   async function saveDocument() {
     if (!document) return;
 
     if (!editTitle.trim()) {
-      setSaveMessage("문서 제목을 입력해주세요.");
+      setSaveMessage(
+        "문서 제목을 입력해주세요."
+      );
+
       return;
     }
 
@@ -323,8 +418,13 @@ export default function Home() {
 
     if (error) {
       console.error(error);
-      setSaveMessage(`저장 실패: ${error.message}`);
+
+      setSaveMessage(
+        `저장 실패: ${error.message}`
+      );
+
       setSaving(false);
+
       return;
     }
 
@@ -332,13 +432,17 @@ export default function Home() {
       setSaveMessage(
         "저장되지 않았습니다. UPDATE 정책을 확인해주세요."
       );
+
       setSaving(false);
+
       return;
     }
 
     setDocument(data[0]);
+
     setEditing(false);
     setSaving(false);
+
     setSaveMessage("저장되었습니다.");
 
     setTimeout(() => {
@@ -347,13 +451,14 @@ export default function Home() {
   }
 
   // =====================================================
-  // 새 문서
+  // NEW DOCUMENT
   // =====================================================
 
   function openCreateDocument() {
     setNewTitle("");
     setNewSlug("");
     setNewContent("");
+
     setCreating(true);
   }
 
@@ -370,11 +475,13 @@ export default function Home() {
 
     if (!title) {
       alert("문서 제목을 입력해주세요.");
+
       return;
     }
 
     if (!slug) {
       alert("slug를 입력해주세요.");
+
       return;
     }
 
@@ -382,28 +489,39 @@ export default function Home() {
       alert(
         "slug는 영문 소문자, 숫자, -만 사용할 수 있습니다."
       );
+
       return;
     }
 
     setCreatingDocument(true);
 
-    const { data: existing, error: checkError } =
-      await supabase
-        .from("documents")
-        .select("id")
-        .eq("slug", slug)
-        .limit(1);
+    const {
+      data: existing,
+      error: checkError,
+    } = await supabase
+      .from("documents")
+      .select("id")
+      .eq("slug", slug)
+      .limit(1);
 
     if (checkError) {
       console.error(checkError);
-      alert("문서 확인 실패: " + checkError.message);
+
+      alert(
+        "문서 확인 실패: " +
+          checkError.message
+      );
+
       setCreatingDocument(false);
+
       return;
     }
 
     if (existing && existing.length > 0) {
       alert("이미 존재하는 slug입니다.");
+
       setCreatingDocument(false);
+
       return;
     }
 
@@ -418,14 +536,22 @@ export default function Home() {
 
     if (error) {
       console.error(error);
-      alert("문서 생성 실패: " + error.message);
+
+      alert(
+        "문서 생성 실패: " +
+          error.message
+      );
+
       setCreatingDocument(false);
+
       return;
     }
 
     if (!data || data.length === 0) {
       alert("문서가 생성되지 않았습니다.");
+
       setCreatingDocument(false);
+
       return;
     }
 
@@ -439,7 +565,9 @@ export default function Home() {
     setNewContent("");
 
     const url =
-      `/?doc=${encodeURIComponent(created.slug)}`;
+      `/?doc=${encodeURIComponent(
+        created.slug
+      )}`;
 
     window.history.pushState(
       { slug: created.slug },
@@ -457,62 +585,159 @@ export default function Home() {
   }
 
   // =====================================================
-  // 본문 렌더링
+  // CONTENT RENDER
   // =====================================================
 
   function renderContent(content) {
-    if (!content) return null;
+    if (!content) {
+      return (
+        <p className="empty-document">
+          아직 작성된 내용이 없습니다.
+        </p>
+      );
+    }
 
-    const parts = content.split(/(\[\[.*?\]\])/g);
+    const lines = content.split("\n");
 
-    return parts.map((part, index) => {
-      const match = part.match(/^\[\[(.*?)\]\]$/);
+    return lines.map((line, index) => {
+      // -------------------------------
+      // ## 제목
+      // -------------------------------
 
-      if (!match) {
+      const headingMatch =
+        line.match(
+          /^(#{2,3})\s+(.+)$/
+        );
+
+      if (headingMatch) {
+        const level =
+          headingMatch[1].length;
+
+        const title =
+          headingMatch[2].trim();
+
+        const id = `heading-${index}`;
+
+        if (level === 2) {
+          return (
+            <h2
+              key={index}
+              id={id}
+              className="wiki-heading wiki-heading-2"
+            >
+              {title}
+            </h2>
+          );
+        }
+
         return (
-          <span key={index}>
-            {part}
-          </span>
+          <h3
+            key={index}
+            id={id}
+            className="wiki-heading wiki-heading-3"
+          >
+            {title}
+          </h3>
         );
       }
 
-      const title = match[1].trim();
+      // -------------------------------
+      // 빈 줄
+      // -------------------------------
+
+      if (line === "") {
+        return (
+          <div
+            key={index}
+            className="wiki-empty-line"
+          />
+        );
+      }
+
+      // -------------------------------
+      // [[문서명]]
+      // -------------------------------
+
+      const parts =
+        line.split(
+          /(\[\[.*?\]\])/
+        );
 
       return (
-        <button
+        <div
           key={index}
-          type="button"
-          className="wiki-link"
-          onClick={() => openWikiDocument(title)}
+          className="wiki-line"
         >
-          {title}
-        </button>
+          {parts.map(
+            (part, partIndex) => {
+              const match =
+                part.match(
+                  /^\[\[(.*?)\]\]$/
+                );
+
+              if (!match) {
+                return (
+                  <span
+                    key={partIndex}
+                  >
+                    {part}
+                  </span>
+                );
+              }
+
+              const title =
+                match[1].trim();
+
+              return (
+                <button
+                  key={partIndex}
+                  type="button"
+                  className="wiki-link"
+                  onClick={() =>
+                    openWikiDocument(
+                      title
+                    )
+                  }
+                >
+                  {title}
+                </button>
+              );
+            }
+          )}
+        </div>
       );
     });
   }
 
   // =====================================================
-  // 로딩
+  // LOADING
   // =====================================================
 
   if (loading) {
     return (
-      <main className={`wiki-app theme-${theme}`}>
+      <main
+        className={`wiki-app theme-${theme}`}
+      >
         <div className="loading-screen">
           <div className="loading-dot" />
-          <p>여름위키 불러오는 중...</p>
+
+          <p>
+            여름위키 불러오는 중...
+          </p>
         </div>
       </main>
     );
   }
 
   // =====================================================
-  // 에러
+  // ERROR
   // =====================================================
 
   if (error) {
     return (
-      <main className={`wiki-app theme-${theme}`}>
+      <main
+        className={`wiki-app theme-${theme}`}
+      >
         <div className="error-screen">
           <div className="error-box">
 
@@ -543,13 +768,17 @@ export default function Home() {
   if (!document) return null;
 
   // =====================================================
-  // 화면
+  // PAGE
   // =====================================================
 
   return (
-    <main className={`wiki-app theme-${theme}`}>
+    <main
+      className={`wiki-app theme-${theme}`}
+    >
 
-      {/* ================= HEADER ================= */}
+      {/* =================================================
+          HEADER
+      ================================================= */}
 
       <header className="header">
 
@@ -570,7 +799,7 @@ export default function Home() {
           </button>
 
 
-          {/* 검색 */}
+          {/* SEARCH */}
 
           <div className="search-wrapper">
 
@@ -589,10 +818,16 @@ export default function Home() {
                     e.target.value
                   )
                 }
-                onKeyDown={handleSearchKeyDown}
+                onKeyDown={
+                  handleSearchKeyDown
+                }
                 onFocus={() => {
-                  if (searchText.trim()) {
-                    setShowSuggestions(true);
+                  if (
+                    searchText.trim()
+                  ) {
+                    setShowSuggestions(
+                      true
+                    );
                   }
                 }}
               />
@@ -610,13 +845,14 @@ export default function Home() {
             </div>
 
 
-            {/* 검색 추천 */}
+            {/* SEARCH SUGGESTIONS */}
 
             {showSuggestions &&
               searchText.trim() && (
                 <div className="search-suggestions">
 
-                  {searchResults.length > 0 ? (
+                  {searchResults.length >
+                  0 ? (
                     <>
                       <div className="suggestion-label">
                         문서 검색 결과
@@ -628,7 +864,9 @@ export default function Home() {
                             key={result.id}
                             type="button"
                             className="suggestion-item"
-                            onMouseDown={(e) =>
+                            onMouseDown={(
+                              e
+                            ) =>
                               e.preventDefault()
                             }
                             onClick={() =>
@@ -642,7 +880,9 @@ export default function Home() {
                             </span>
 
                             <span className="suggestion-title">
-                              {result.title}
+                              {
+                                result.title
+                              }
                             </span>
 
                             <span className="suggestion-arrow">
@@ -654,7 +894,9 @@ export default function Home() {
                     </>
                   ) : !searching ? (
                     <div className="no-search-result">
-                      <div>🔎</div>
+                      <div>
+                        🔎
+                      </div>
 
                       <span>
                         검색 결과가 없습니다.
@@ -668,18 +910,20 @@ export default function Home() {
           </div>
 
 
-          {/* 새 문서 */}
+          {/* NEW DOCUMENT */}
 
           <button
             type="button"
             className="new-document-top-button"
-            onClick={openCreateDocument}
+            onClick={
+              openCreateDocument
+            }
           >
             ＋ 새 문서
           </button>
 
 
-          {/* 테마 */}
+          {/* THEME */}
 
           <button
             type="button"
@@ -707,7 +951,9 @@ export default function Home() {
       </header>
 
 
-      {/* ================= 새 문서 ================= */}
+      {/* =================================================
+          NEW DOCUMENT MODAL
+      ================================================= */}
 
       {creating && (
         <div className="new-document-overlay">
@@ -731,7 +977,9 @@ export default function Home() {
               <button
                 type="button"
                 className="new-document-close"
-                onClick={closeCreateDocument}
+                onClick={
+                  closeCreateDocument
+                }
               >
                 ×
               </button>
@@ -749,7 +997,9 @@ export default function Home() {
                 type="text"
                 value={newTitle}
                 onChange={(e) =>
-                  setNewTitle(e.target.value)
+                  setNewTitle(
+                    e.target.value
+                  )
                 }
                 placeholder="예: 괴산오성중학교"
               />
@@ -793,7 +1043,9 @@ export default function Home() {
                     e.target.value
                   )
                 }
-                placeholder="문서 내용을 입력하세요."
+                placeholder={
+                  "문서 내용을 입력하세요.\n\n## 개요\n내용\n\n### 특징\n내용"
+                }
               />
 
             </div>
@@ -804,8 +1056,12 @@ export default function Home() {
               <button
                 type="button"
                 className="cancel-button"
-                onClick={closeCreateDocument}
-                disabled={creatingDocument}
+                onClick={
+                  closeCreateDocument
+                }
+                disabled={
+                  creatingDocument
+                }
               >
                 취소
               </button>
@@ -814,7 +1070,9 @@ export default function Home() {
                 type="button"
                 className="save-button"
                 onClick={createDocument}
-                disabled={creatingDocument}
+                disabled={
+                  creatingDocument
+                }
               >
                 {creatingDocument
                   ? "생성 중..."
@@ -829,11 +1087,15 @@ export default function Home() {
       )}
 
 
-      {/* ================= PAGE ================= */}
+      {/* =================================================
+          PAGE
+      ================================================= */}
 
       <div className="page-container">
 
         <div className="content">
+
+          {/* BREADCRUMB */}
 
           <div className="breadcrumb">
 
@@ -844,7 +1106,9 @@ export default function Home() {
               여름위키
             </button>
 
-            <span>›</span>
+            <span>
+              ›
+            </span>
 
             <span>
               {document.title}
@@ -852,6 +1116,8 @@ export default function Home() {
 
           </div>
 
+
+          {/* DOCUMENT */}
 
           <article className="document">
 
@@ -887,7 +1153,9 @@ export default function Home() {
                 <button
                   type="button"
                   className="edit-button"
-                  onClick={startEditing}
+                  onClick={
+                    startEditing
+                  }
                 >
                   ✎ 수정
                 </button>
@@ -897,7 +1165,9 @@ export default function Home() {
                   <button
                     type="button"
                     className="cancel-button"
-                    onClick={cancelEditing}
+                    onClick={
+                      cancelEditing
+                    }
                     disabled={saving}
                   >
                     취소
@@ -906,7 +1176,9 @@ export default function Home() {
                   <button
                     type="button"
                     className="save-button"
-                    onClick={saveDocument}
+                    onClick={
+                      saveDocument
+                    }
                     disabled={saving}
                   >
                     {saving
@@ -923,15 +1195,25 @@ export default function Home() {
             <div className="document-divider" />
 
 
+            {/* EDITOR */}
+
             {editing ? (
               <div className="editor-area">
 
                 <div className="editor-help">
-                  💡 다른 문서로 연결하려면{" "}
+                  💡 문서 연결:{" "}
                   <strong>
                     [[문서명]]
+                  </strong>
+                  <br />
+                  💡 목차:{" "}
+                  <strong>
+                    ## 제목
                   </strong>{" "}
-                  형식을 사용하세요.
+                  또는{" "}
+                  <strong>
+                    ### 소제목
+                  </strong>
                 </div>
 
                 <textarea
@@ -965,9 +1247,47 @@ export default function Home() {
         </div>
 
 
-        {/* ================= SIDEBAR ================= */}
+        {/* =================================================
+            SIDEBAR
+        ================================================= */}
 
         <aside className="sidebar">
+
+          {/* TOC */}
+
+          {headings.length > 0 && (
+            <div className="sidebar-card toc-card">
+
+              <div className="sidebar-title">
+                목차
+              </div>
+
+              <div className="toc-list">
+
+                {headings.map(
+                  (heading) => (
+                    <button
+                      key={heading.id}
+                      type="button"
+                      className={`toc-item toc-level-${heading.level}`}
+                      onClick={() =>
+                        scrollToHeading(
+                          heading.id
+                        )
+                      }
+                    >
+                      {heading.title}
+                    </button>
+                  )
+                )}
+
+              </div>
+
+            </div>
+          )}
+
+
+          {/* THIS DOCUMENT */}
 
           <div className="sidebar-card">
 
@@ -975,14 +1295,25 @@ export default function Home() {
               이 문서
             </div>
 
-            <button type="button">
+            <button
+              type="button"
+              onClick={() =>
+                window.scrollTo({
+                  top: 0,
+                  behavior:
+                    "smooth",
+                })
+              }
+            >
               📖 문서 읽기
             </button>
 
             {!editing && (
               <button
                 type="button"
-                onClick={startEditing}
+                onClick={
+                  startEditing
+                }
               >
                 ✎ 문서 수정
               </button>
@@ -1006,6 +1337,8 @@ export default function Home() {
           </div>
 
 
+          {/* WIKI */}
+
           <div className="sidebar-card">
 
             <div className="sidebar-title">
@@ -1021,7 +1354,9 @@ export default function Home() {
 
             <button
               type="button"
-              onClick={openCreateDocument}
+              onClick={
+                openCreateDocument
+              }
             >
               ＋ 새 문서
             </button>

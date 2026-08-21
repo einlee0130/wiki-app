@@ -9,8 +9,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState("pink");
 
-  // 문서 불러오기
-  async function loadDocument(slug) {
+  // 현재 URL에서 문서 slug 가져오기
+  function getSlugFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("doc") || "main";
+  }
+
+  // slug로 문서 불러오기
+  async function loadDocument(slug, addHistory = false) {
     setLoading(true);
     setError("");
 
@@ -33,24 +39,65 @@ export default function Home() {
     }
 
     setDocument(data[0]);
+
+    // 브라우저 기록 추가
+    if (addHistory) {
+      const url =
+        slug === "main"
+          ? "/"
+          : `/?doc=${encodeURIComponent(slug)}`;
+
+      window.history.pushState(
+        { slug },
+        "",
+        url
+      );
+    }
+
     setLoading(false);
   }
 
-  // 처음에는 main 문서
+  // 처음 페이지가 열렸을 때
   useEffect(() => {
-    loadDocument("main");
+    const slug = getSlugFromUrl();
+
+    loadDocument(slug);
+
+    // 브라우저 뒤로가기 / 앞으로가기
+    function handlePopState(event) {
+      const slugFromState =
+        event.state?.slug || getSlugFromUrl();
+
+      loadDocument(slugFromState);
+    }
+
+    window.addEventListener(
+      "popstate",
+      handlePopState
+    );
+
+    return () => {
+      window.removeEventListener(
+        "popstate",
+        handlePopState
+      );
+    };
   }, []);
 
-  // [[문서명]]을 찾아서 클릭 가능한 링크로 만들어줌
+  // [[문서명]] 찾기
   function renderContent(content) {
     if (!content) {
       return null;
     }
 
-    const parts = content.split(/(\[\[.*?\]\])/g);
+    const parts = content.split(
+      /(\[\[.*?\]\])/g
+    );
 
     return parts.map((part, index) => {
-      const match = part.match(/^\[\[(.*?)\]\]$/);
+      const match = part.match(
+        /^\[\[(.*?)\]\]$/
+      );
 
       // 일반 텍스트
       if (!match) {
@@ -61,7 +108,6 @@ export default function Home() {
         );
       }
 
-      // [[괴산오성중학교]] → 괴산오성중학교
       const title = match[1].trim();
 
       return (
@@ -69,7 +115,9 @@ export default function Home() {
           key={index}
           type="button"
           className="wiki-link"
-          onClick={() => openWikiDocument(title)}
+          onClick={() =>
+            openWikiDocument(title)
+          }
         >
           {title}
         </button>
@@ -77,12 +125,12 @@ export default function Home() {
     });
   }
 
-  // [[문서명]]을 클릭했을 때 실행
+  // 위키 링크 클릭
   async function openWikiDocument(title) {
     setLoading(true);
     setError("");
 
-    // 제목으로 문서 검색
+    // 제목으로 문서 찾기
     const { data, error } = await supabase
       .from("documents")
       .select("*")
@@ -96,13 +144,58 @@ export default function Home() {
     }
 
     if (!data || data.length === 0) {
-      setError(`"${title}" 문서를 찾을 수 없습니다.`);
+      setError(
+        `"${title}" 문서를 찾을 수 없습니다.`
+      );
       setLoading(false);
       return;
     }
 
-    setDocument(data[0]);
+    const targetDocument = data[0];
+
+    // URL 변경 + 브라우저 기록 저장
+    const url =
+      targetDocument.slug === "main"
+        ? "/"
+        : `/?doc=${encodeURIComponent(
+            targetDocument.slug
+          )}`;
+
+    window.history.pushState(
+      {
+        slug: targetDocument.slug,
+      },
+      "",
+      url
+    );
+
+    // 화면 변경
+    setDocument(targetDocument);
+
     setLoading(false);
+
+    // 화면 맨 위로
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  // 메인으로 이동
+  function goHome() {
+    if (document?.slug === "main") {
+      return;
+    }
+
+    window.history.pushState(
+      {
+        slug: "main",
+      },
+      "",
+      "/"
+    );
+
+    loadDocument("main");
   }
 
   // 로딩
@@ -120,16 +213,20 @@ export default function Home() {
     return (
       <main className="error-screen">
         <div className="error-box">
-          <div className="error-icon">⚠️</div>
+          <div className="error-icon">
+            ⚠️
+          </div>
 
-          <h1>문서를 불러오지 못했어요</h1>
+          <h1>
+            문서를 불러오지 못했어요
+          </h1>
 
           <p>{error}</p>
 
           <button
             type="button"
             className="back-button"
-            onClick={() => loadDocument("main")}
+            onClick={goHome}
           >
             메인으로 돌아가기
           </button>
@@ -139,11 +236,10 @@ export default function Home() {
   }
 
   return (
-    <main className={`wiki-app theme-${theme}`}>
-      {/* =========================
-          HEADER
-      ========================= */}
-
+    <main
+      className={`wiki-app theme-${theme}`}
+    >
+      {/* HEADER */}
       <header className="header">
         <div className="header-inner">
 
@@ -151,7 +247,7 @@ export default function Home() {
           <button
             type="button"
             className="logo"
-            onClick={() => loadDocument("main")}
+            onClick={goHome}
           >
             <span className="logo-icon">
               ✦
@@ -162,7 +258,7 @@ export default function Home() {
             </span>
           </button>
 
-          {/* 검색창 - 아직 기능 없음 */}
+          {/* 검색창 */}
           <div className="search-box">
             <span className="search-icon">
               ⌕
@@ -178,7 +274,7 @@ export default function Home() {
             </span>
           </div>
 
-          {/* 테마 변경 */}
+          {/* 테마 */}
           <button
             type="button"
             className="theme-toggle"
@@ -191,16 +287,15 @@ export default function Home() {
             }
             aria-label="테마 변경"
           >
-            {theme === "pink" ? "🌸" : "🔵"}
+            {theme === "pink"
+              ? "🌸"
+              : "🔵"}
           </button>
 
         </div>
       </header>
 
-      {/* =========================
-          CONTENT
-      ========================= */}
-
+      {/* PAGE */}
       <div className="page-container">
 
         <div className="content">
@@ -210,7 +305,7 @@ export default function Home() {
 
             <button
               type="button"
-              onClick={() => loadDocument("main")}
+              onClick={goHome}
             >
               여름위키
             </button>
@@ -223,13 +318,12 @@ export default function Home() {
 
           </div>
 
-          {/* 문서 */}
+          {/* DOCUMENT */}
           <article className="document">
 
             <div className="document-header">
 
               <div>
-
                 <div className="document-label">
                   WIKI DOCUMENT
                 </div>
@@ -237,7 +331,6 @@ export default function Home() {
                 <h1>
                   {document.title}
                 </h1>
-
               </div>
 
               <button
@@ -251,19 +344,17 @@ export default function Home() {
 
             <div className="document-divider" />
 
-            {/* 본문 */}
             <div className="document-content">
-              {renderContent(document.content)}
+              {renderContent(
+                document.content
+              )}
             </div>
 
           </article>
 
         </div>
 
-        {/* =========================
-            SIDEBAR
-        ========================= */}
-
+        {/* SIDEBAR */}
         <aside className="sidebar">
 
           <div className="sidebar-card">
@@ -294,7 +385,7 @@ export default function Home() {
 
             <button
               type="button"
-              onClick={() => loadDocument("main")}
+              onClick={goHome}
             >
               🏠 메인 페이지
             </button>

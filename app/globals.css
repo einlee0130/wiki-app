@@ -996,3 +996,155 @@ button:disabled {
 
   text-align: center;
 }
+
+/* =========================
+   NEW DOCUMENT
+========================= */
+
+.new-document-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.new-document-box {
+  width: min(600px, 100%);
+
+  max-height: calc(100vh - 40px);
+
+  overflow: auto;
+
+  background: #fff;
+
+  border: 1px solid var(--border);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.new-document-header {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  padding: 20px 22px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.new-document-header h2 {
+  margin: 0;
+
+  font-size: 21px;
+
+  letter-spacing: -0.5px;
+}
+
+.new-document-close {
+  width: 30px;
+  height: 30px;
+
+  background: transparent;
+
+  color: #888;
+
+  font-size: 25px;
+
+  line-height: 1;
+}
+
+.new-document-close:hover {
+  background: #f3f3f3;
+
+  color: #333;
+}
+
+.new-document-form {
+  padding: 22px;
+}
+
+.new-document-form label {
+  display: block;
+
+  margin: 0 0 6px;
+
+  color: #555;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.new-document-form input,
+.new-document-form textarea {
+  display: block;
+
+  width: 100%;
+
+  margin-bottom: 17px;
+
+  padding: 10px 11px;
+
+  border: 1px solid var(--border-dark);
+
+  outline: none;
+
+  background: #fff;
+
+  color: #222;
+
+  font-size: 13px;
+}
+
+.new-document-form input:focus,
+.new-document-form textarea:focus {
+  border-color: var(--point);
+
+  box-shadow:
+    0 0 0 2px var(--point-light);
+}
+
+.new-document-form textarea {
+  min-height: 180px;
+
+  resize: vertical;
+
+  line-height: 1.7;
+}
+
+.slug-help {
+  margin-top: -10px;
+
+  margin-bottom: 17px;
+
+  color: #999;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+.new-document-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 6px;
+
+  padding: 14px 22px;
+
+  border-top: 1px solid var(--border);
+
+  background: #fafafa;
+}

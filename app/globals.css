@@ -1,5 +1,36 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap");
 
+/* =========================================================
+   여름위키
+   Namuwiki-inspired UI
+   Pink / Sky theme
+========================================================= */
+
+:root {
+  --point: #f08aaa;
+  --point-hover: #df6f91;
+  --point-light: #fff0f5;
+
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-soft: #fafafa;
+
+  --text: #202124;
+  --text-secondary: #666;
+  --text-muted: #888;
+
+  --border: #d8d8d8;
+  --border-dark: #c4c4c4;
+
+  --link: #e06f94;
+
+  --header: #ffffff;
+
+  --code-bg: #f3f3f3;
+
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -8,16 +39,26 @@ html,
 body {
   margin: 0;
   padding: 0;
+
+  min-height: 100%;
+
+  font-family:
+    "Noto Sans KR",
+    Arial,
+    sans-serif;
+
+  background: var(--bg);
+  color: var(--text);
 }
 
 body {
-  font-family: "Noto Sans KR", sans-serif;
-  background: #f8f9fb;
-  color: #191f28;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 button,
-input {
+input,
+textarea {
   font-family: inherit;
 }
 
@@ -26,68 +67,52 @@ button {
   cursor: pointer;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+button:disabled {
+  cursor: default;
 }
 
-/* =========================
-   WIKI APP
-========================= */
 
-.wiki-app {
-  --point: #ff6f9d;
-  --point-hover: #ff568b;
+/* =========================================================
+   THEME
+========================================================= */
+
+.wiki-app.theme-pink {
+  --point: #f08aaa;
+  --point-hover: #dc6d90;
   --point-light: #fff0f5;
-
-  --background: #f8f9fb;
-  --surface: #ffffff;
-
-  --text: #191f28;
-  --sub-text: #6b7280;
-
-  --border: #e9edf2;
-
-  min-height: 100vh;
-
-  background: var(--background);
-  color: var(--text);
-
-  transition:
-    background 0.3s ease,
-    color 0.3s ease;
+  --link: #dc7090;
 }
-
-/* =========================
-   BLUE THEME
-========================= */
 
 .wiki-app.theme-blue {
-  --point: #4d8dff;
-  --point-hover: #377df0;
-  --point-light: #edf4ff;
+  --point: #79b8d8;
+  --point-hover: #579dbf;
+  --point-light: #edf8fd;
+  --link: #579dbf;
 }
 
-/* =========================
+
+/* =========================================================
    HEADER
-========================= */
+========================================================= */
 
 .header {
   position: sticky;
   top: 0;
+
   z-index: 100;
 
-  height: 72px;
+  height: 58px;
 
-  background: rgba(255, 255, 255, 0.9);
-
-  backdrop-filter: blur(18px);
+  background: var(--header);
 
   border-bottom: 1px solid var(--border);
+
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .header-inner {
-  width: min(1180px, calc(100% - 40px));
+  width: min(1180px, calc(100% - 32px));
+
   height: 100%;
 
   margin: 0 auto;
@@ -95,92 +120,94 @@ a {
   display: flex;
   align-items: center;
 
-  gap: 24px;
+  gap: 18px;
 }
 
-/* =========================
+
+/* =========================================================
    LOGO
-========================= */
+========================================================= */
 
 .logo {
-  min-width: 150px;
-
   display: flex;
   align-items: center;
 
-  gap: 9px;
+  gap: 7px;
 
-  font-size: 20px;
+  padding: 4px 7px;
+
+  background: transparent;
+
+  color: var(--text);
+
+  font-size: 18px;
   font-weight: 800;
 
-  letter-spacing: -0.7px;
+  white-space: nowrap;
+}
+
+.logo:hover {
+  color: var(--point);
 }
 
 .logo-icon {
-  width: 34px;
-  height: 34px;
+  display: inline-flex;
 
-  display: flex;
   align-items: center;
   justify-content: center;
 
-  border-radius: 11px;
+  width: 25px;
+  height: 25px;
 
-  background: var(--point);
   color: white;
 
-  font-size: 17px;
+  background: var(--point);
 
-  box-shadow: 0 5px 14px rgba(255, 111, 157, 0.2);
+  border-radius: 4px;
 
-  transition: background 0.3s ease;
+  font-size: 14px;
 }
 
-/* =========================
+
+/* =========================================================
    SEARCH
-========================= */
+========================================================= */
 
 .search-box {
   flex: 1;
 
-  max-width: 560px;
+  max-width: 580px;
 
-  height: 44px;
-
-  margin: 0 auto;
+  height: 36px;
 
   display: flex;
   align-items: center;
 
-  padding: 0 12px;
+  border: 1px solid var(--border-dark);
 
-  border-radius: 13px;
-
-  background: #f2f4f6;
-
-  transition:
-    background 0.2s ease,
-    box-shadow 0.2s ease;
+  background: #fff;
 }
 
 .search-box:focus-within {
-  background: white;
-
-  box-shadow: 0 0 0 2px var(--point-light);
+  border-color: var(--point);
 }
 
 .search-icon {
-  margin-right: 8px;
+  width: 38px;
 
-  color: #8b95a1;
+  text-align: center;
 
-  font-size: 24px;
+  color: #888;
+
+  font-size: 19px;
 }
 
 .search-box input {
   flex: 1;
 
   min-width: 0;
+
+  height: 100%;
 
   border: 0;
   outline: 0;
@@ -189,66 +216,57 @@ a {
 
   color: var(--text);
 
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .search-box input::placeholder {
-  color: #9aa3ad;
+  color: #999;
 }
 
 .search-shortcut {
-  width: 24px;
-  height: 24px;
+  width: 30px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-right: 5px;
 
-  border-radius: 6px;
+  text-align: center;
 
-  background: white;
-
-  color: #9aa3ad;
+  color: #aaa;
 
   font-size: 12px;
-  font-weight: 600;
 }
 
-/* =========================
+
+/* =========================================================
    THEME BUTTON
-========================= */
+========================================================= */
 
 .theme-toggle {
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
 
-  flex-shrink: 0;
+  border: 1px solid var(--border);
 
-  border-radius: 13px;
+  background: #fff;
 
-  background: var(--point-light);
+  border-radius: 4px;
 
-  font-size: 18px;
-
-  transition:
-    transform 0.2s ease,
-    background 0.3s ease;
+  font-size: 15px;
 }
 
 .theme-toggle:hover {
-  transform: scale(1.06);
+  border-color: var(--point);
+  background: var(--point-light);
 }
 
-/* =========================
-   PAGE
-========================= */
+
+/* =========================================================
+   PAGE LAYOUT
+========================================================= */
 
 .page-container {
-  width: min(1180px, calc(100% - 40px));
+  width: min(1180px, calc(100% - 32px));
 
   margin: 0 auto;
-
-  padding: 36px 0 80px;
 
   display: grid;
 
@@ -256,16 +274,19 @@ a {
     minmax(0, 1fr)
     230px;
 
-  gap: 32px;
+  gap: 22px;
+
+  padding: 22px 0 60px;
 }
 
 .content {
   min-width: 0;
 }
 
-/* =========================
+
+/* =========================================================
    BREADCRUMB
-========================= */
+========================================================= */
 
 .breadcrumb {
   display: flex;
@@ -273,292 +294,523 @@ a {
 
   gap: 7px;
 
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 
-  color: #8b95a1;
+  color: #888;
 
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12px;
 }
 
-.breadcrumb a:hover {
+.breadcrumb button {
+  padding: 0;
+
+  background: transparent;
+
   color: var(--point);
+
+  font-size: 12px;
 }
 
-.breadcrumb span:first-of-type {
-  color: #c2c8ce;
+.breadcrumb button:hover {
+  text-decoration: underline;
 }
 
-/* =========================
+
+/* =========================================================
    DOCUMENT
-========================= */
+========================================================= */
 
 .document {
-  padding: 36px;
+  background: var(--surface);
 
   border: 1px solid var(--border);
 
-  border-radius: 20px;
-
-  background: var(--surface);
-
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.02),
-    0 12px 35px rgba(0, 0, 0, 0.03);
-
-  animation: fadeUp 0.4s ease;
+  box-shadow: var(--shadow);
 }
 
+
+/* =========================================================
+   DOCUMENT HEADER
+========================================================= */
+
 .document-header {
+  min-height: 105px;
+
+  padding: 24px 28px 20px;
+
   display: flex;
-  align-items: flex-start;
+
+  align-items: flex-end;
   justify-content: space-between;
 
   gap: 20px;
 }
 
+.document-title-area {
+  min-width: 0;
+
+  flex: 1;
+}
+
 .document-label {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 
-  color: var(--point);
+  color: #999;
 
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 700;
 
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
 }
 
 .document h1 {
   margin: 0;
 
-  font-size: clamp(28px, 4vw, 38px);
+  color: #222;
+
+  font-size: 29px;
+  font-weight: 800;
 
   line-height: 1.25;
 
-  letter-spacing: -1.5px;
+  letter-spacing: -1px;
+
+  word-break: keep-all;
 }
 
-.edit-button {
-  flex-shrink: 0;
 
-  padding: 9px 14px;
-
-  border-radius: 10px;
-
-  background: var(--point-light);
-
-  color: var(--point);
-
-  font-size: 13px;
-  font-weight: 700;
-
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-}
-
-.edit-button:hover {
-  transform: translateY(-1px);
-
-  background: var(--point);
-  color: white;
-}
+/* =========================================================
+   DIVIDER
+========================================================= */
 
 .document-divider {
   height: 1px;
 
-  margin: 28px 0;
-
   background: var(--border);
 }
 
+
+/* =========================================================
+   EDIT BUTTON
+========================================================= */
+
+.edit-button {
+  flex-shrink: 0;
+
+  padding: 6px 11px;
+
+  border: 1px solid var(--border-dark);
+
+  background: #fff;
+
+  color: #555;
+
+  border-radius: 3px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.edit-button:hover {
+  border-color: var(--point);
+
+  background: var(--point-light);
+
+  color: var(--point-hover);
+}
+
+
+/* =========================================================
+   DOCUMENT CONTENT
+========================================================= */
+
 .document-content {
-  min-height: 180px;
+  min-height: 400px;
 
-  white-space: pre-wrap;
+  padding: 28px;
 
-  color: #343b45;
+  color: #292929;
 
-  font-size: 16px;
+  font-size: 15px;
 
   line-height: 1.9;
 
-  letter-spacing: -0.2px;
+  white-space: pre-wrap;
+
+  word-break: break-word;
 }
 
-/* =========================
+
+/* =========================================================
+   WIKI LINKS
+========================================================= */
+
+.wiki-link {
+  display: inline;
+
+  padding: 0;
+
+  background: transparent;
+
+  color: var(--link);
+
+  border-bottom: 1px dotted var(--link);
+
+  font: inherit;
+  font-weight: 600;
+
+  line-height: inherit;
+
+  vertical-align: baseline;
+}
+
+.wiki-link:hover {
+  color: var(--point-hover);
+
+  border-bottom-style: solid;
+}
+
+
+/* =========================================================
    SIDEBAR
-========================= */
+========================================================= */
 
 .sidebar {
   display: flex;
 
   flex-direction: column;
 
-  gap: 14px;
+  gap: 12px;
 }
 
 .sidebar-card {
-  padding: 17px;
+  background: #fff;
 
   border: 1px solid var(--border);
 
-  border-radius: 16px;
-
-  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .sidebar-title {
-  margin: 2px 4px 10px;
+  padding: 10px 12px;
 
-  color: #8b95a1;
+  border-bottom: 1px solid var(--border);
+
+  background: #f7f7f7;
+
+  color: #555;
 
   font-size: 12px;
-
   font-weight: 700;
 }
 
-.sidebar-card button,
-.sidebar-link {
+.sidebar-card button {
   width: 100%;
 
-  display: block;
-
-  padding: 10px 8px;
-
-  border-radius: 9px;
-
-  background: transparent;
-
-  color: var(--text);
+  padding: 9px 12px;
 
   text-align: left;
 
-  font-size: 13px;
+  background: #fff;
 
-  font-weight: 500;
+  color: #555;
 
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  border-bottom: 1px solid #eee;
+
+  font-size: 12px;
 }
 
-.sidebar-card button:hover,
-.sidebar-link:hover {
+.sidebar-card button:last-child {
+  border-bottom: 0;
+}
+
+.sidebar-card button:hover {
   background: var(--point-light);
 
-  color: var(--point);
+  color: var(--point-hover);
 }
 
-/* =========================
-   LOADING
-========================= */
 
-.loading-screen,
-.error-screen {
+/* =========================================================
+   EDITOR
+========================================================= */
+
+.edit-title-input {
+  width: 100%;
+
+  max-width: 700px;
+
+  padding: 5px 8px;
+
+  border: 1px solid var(--border-dark);
+
+  outline: none;
+
+  background: white;
+
+  color: var(--text);
+
+  font-family: inherit;
+
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.edit-title-input:focus {
+  border-color: var(--point);
+
+  box-shadow:
+    0 0 0 2px var(--point-light);
+}
+
+.edit-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  flex-shrink: 0;
+}
+
+.cancel-button,
+.save-button {
+  padding: 6px 12px;
+
+  border-radius: 3px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cancel-button {
+  border: 1px solid var(--border-dark);
+
+  background: white;
+
+  color: #555;
+}
+
+.cancel-button:hover {
+  background: #f3f3f3;
+}
+
+.save-button {
+  border: 1px solid var(--point);
+
+  background: var(--point);
+
+  color: white;
+}
+
+.save-button:hover {
+  background: var(--point-hover);
+}
+
+.save-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.5;
+}
+
+
+/* =========================================================
+   EDITOR AREA
+========================================================= */
+
+.editor-area {
+  padding: 24px 28px 30px;
+}
+
+.editor-help {
+  margin-bottom: 10px;
+
+  padding: 9px 12px;
+
+  border-left: 3px solid var(--point);
+
+  background: var(--point-light);
+
+  color: #666;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+.editor-help strong {
+  color: var(--point-hover);
+}
+
+.document-editor {
+  display: block;
+
+  width: 100%;
+
+  min-height: 430px;
+
+  padding: 15px;
+
+  resize: vertical;
+
+  border: 1px solid var(--border-dark);
+
+  outline: none;
+
+  background: #fff;
+
+  color: #222;
+
+  font-family:
+    "Noto Sans KR",
+    monospace;
+
+  font-size: 14px;
+
+  line-height: 1.8;
+}
+
+.document-editor:focus {
+  border-color: var(--point);
+
+  box-shadow:
+    0 0 0 2px var(--point-light);
+}
+
+.save-message {
+  margin-top: 9px;
+
+  color: var(--point-hover);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.error-screen,
+.loading-screen {
   min-height: 100vh;
 
   display: flex;
 
-  flex-direction: column;
-
   align-items: center;
   justify-content: center;
 
-  color: #6b7280;
-}
+  flex-direction: column;
 
-.loading-dot {
-  width: 20px;
-  height: 20px;
+  background: var(--bg);
 
-  margin-bottom: 14px;
-
-  border-radius: 50%;
-
-  background: #ff6f9d;
-
-  animation: pulse 1s infinite ease-in-out;
+  color: #666;
 }
 
 .error-box {
+  width: min(420px, calc(100% - 32px));
+
   padding: 30px;
-
-  text-align: center;
-
-  border-radius: 18px;
 
   background: white;
 
-  border: 1px solid #e9edf2;
+  border: 1px solid var(--border);
+
+  box-shadow: var(--shadow);
+
+  text-align: center;
 }
 
-.error-box span {
-  font-size: 32px;
+.error-icon {
+  margin-bottom: 8px;
+
+  font-size: 28px;
 }
 
 .error-box h1 {
-  margin: 10px 0 8px;
+  margin: 0 0 5px;
 
-  color: #191f28;
-
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .error-box p {
   margin: 0;
 
-  font-size: 14px;
+  color: #777;
+
+  font-size: 13px;
 }
 
-/* =========================
-   ANIMATION
-========================= */
+.back-button {
+  margin-top: 18px;
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
+  padding: 7px 13px;
 
+  border: 1px solid var(--point);
+
+  border-radius: 3px;
+
+  background: var(--point-light);
+
+  color: var(--point-hover);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading-screen p {
+  margin-top: 10px;
+
+  color: #777;
+
+  font-size: 13px;
+}
+
+.loading-dot {
+  width: 18px;
+  height: 18px;
+
+  border: 2px solid #ddd;
+
+  border-top-color: var(--point);
+
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: rotate(360deg);
   }
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(0.8);
 
-    opacity: 0.5;
-  }
-
-  50% {
-    transform: scale(1);
-
-    opacity: 1;
-  }
-}
-
-/* =========================
+/* =========================================================
    MOBILE
-========================= */
+========================================================= */
 
 @media (max-width: 800px) {
-  .header {
-    height: 64px;
+  .page-container {
+    grid-template-columns: 1fr;
+
+    width: min(100% - 20px, 700px);
+
+    padding-top: 14px;
+  }
+
+  .sidebar {
+    display: none;
   }
 
   .header-inner {
-    width: calc(100% - 24px);
+    width: calc(100% - 16px);
 
-    gap: 10px;
-  }
-
-  .logo {
-    min-width: auto;
+    gap: 8px;
   }
 
   .logo-text {
@@ -569,230 +821,43 @@ a {
     max-width: none;
   }
 
-  .page-container {
-    width: calc(100% - 24px);
-
-    padding-top: 22px;
-
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    display: none;
-  }
-
-  .document {
-    padding: 24px 20px;
-
-    border-radius: 16px;
-  }
-
   .document-header {
-    align-items: center;
+    padding: 18px;
   }
 
   .document h1 {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .document-content {
-    font-size: 15px;
+    padding: 20px;
+
+    font-size: 14px;
+  }
+
+  .editor-area {
+    padding: 18px;
+  }
+
+  .edit-title-input {
+    font-size: 23px;
   }
 }
 
-.wiki-link {
-  display: inline;
-  padding: 0;
+@media (max-width: 500px) {
+  .document-header {
+    align-items: flex-start;
 
-  border: 0;
-  border-bottom: 1px solid var(--point);
+    flex-direction: column;
+  }
 
-  background: transparent;
+  .edit-actions {
+    width: 100%;
 
-  color: var(--point);
+    justify-content: flex-end;
+  }
 
-  font: inherit;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition:
-    color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.wiki-link:hover {
-  color: var(--point-hover);
-  border-bottom-width: 2px;
-}
-
-.back-button {
-  margin-top: 18px;
-
-  padding: 10px 16px;
-
-  border-radius: 10px;
-
-  background: var(--point-light);
-  color: var(--point);
-
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.breadcrumb button {
-  padding: 0;
-
-  background: transparent;
-
-  color: #8b95a1;
-
-  font: inherit;
-  font-weight: 500;
-}
-
-.breadcrumb button:hover {
-  color: var(--point);
-}
-
-/* =========================
-   EDITOR
-========================= */
-
-.document-title-area {
-  min-width: 0;
-  flex: 1;
-}
-
-.edit-title-input {
-  width: 100%;
-  max-width: 600px;
-
-  padding: 8px 10px;
-
-  border: 2px solid var(--point);
-  border-radius: 10px;
-
-  outline: none;
-
-  background: white;
-  color: var(--text);
-
-  font-family: inherit;
-  font-size: 32px;
-  font-weight: 800;
-
-  letter-spacing: -1.5px;
-}
-
-.edit-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  flex-shrink: 0;
-}
-
-.cancel-button,
-.save-button {
-  padding: 9px 14px;
-
-  border-radius: 10px;
-
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.cancel-button {
-  background: #f2f4f6;
-  color: #6b7280;
-}
-
-.cancel-button:hover {
-  background: #e9edf2;
-}
-
-.save-button {
-  background: var(--point);
-  color: white;
-
-  box-shadow: 0 5px 14px rgba(255, 111, 157, 0.18);
-}
-
-.save-button:hover {
-  background: var(--point-hover);
-}
-
-.save-button:disabled,
-.cancel-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.editor-area {
-  width: 100%;
-}
-
-.editor-help {
-  margin-bottom: 12px;
-
-  padding: 12px 14px;
-
-  border-radius: 10px;
-
-  background: var(--point-light);
-
-  color: #6b7280;
-
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.editor-help strong {
-  color: var(--point);
-}
-
-.document-editor {
-  display: block;
-
-  width: 100%;
-  min-height: 400px;
-
-  padding: 18px;
-
-  resize: vertical;
-
-  border: 1px solid var(--border);
-  border-radius: 13px;
-
-  outline: none;
-
-  background: #fafbfc;
-  color: var(--text);
-
-  font-family: inherit;
-  font-size: 15px;
-  line-height: 1.8;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.document-editor:focus {
-  border-color: var(--point);
-
-  box-shadow:
-    0 0 0 3px var(--point-light);
-
-  background: white;
-}
-
-.save-message {
-  margin-top: 10px;
-
-  color: var(--point);
-
-  font-size: 13px;
-  font-weight: 600;
+  .document-editor {
+    min-height: 350px;
+  }
 }

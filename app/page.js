@@ -52,20 +52,22 @@ export default function Home() {
   // =====================================================
 
   const [creating, setCreating] = useState(false);
+  const [creatingChild, setCreatingChild] = useState(false);
+
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [newContent, setNewContent] = useState("");
-  const [creatingDocument, setCreatingDocument] = useState(false);
 
-  // 현재 문서를 부모로 사용할지
-  const [creatingChild, setCreatingChild] = useState(false);
+  const [creatingDocument, setCreatingDocument] =
+    useState(false);
 
   // =====================================================
   // CHILD DOCUMENTS
   // =====================================================
 
   const [childDocuments, setChildDocuments] = useState([]);
-  const [loadingChildren, setLoadingChildren] = useState(false);
+  const [loadingChildren, setLoadingChildren] =
+    useState(false);
 
   // =====================================================
   // URL
@@ -96,9 +98,11 @@ export default function Home() {
       .order("title", { ascending: true });
 
     if (error) {
-      console.error("하위 문서 불러오기 실패:", error);
+      console.error("하위 문서 로딩 오류:", error);
+
       setChildDocuments([]);
       setLoadingChildren(false);
+
       return;
     }
 
@@ -185,7 +189,6 @@ export default function Home() {
     if (!document?.content) return [];
 
     const lines = document.content.split("\n");
-
     const result = [];
 
     lines.forEach((line, index) => {
@@ -195,13 +198,10 @@ export default function Home() {
 
       if (!match) return;
 
-      const level = match[1].length;
-      const title = match[2].trim();
-
       result.push({
         id: `heading-${index}`,
-        level,
-        title,
+        level: match[1].length,
+        title: match[2].trim(),
       });
     });
 
@@ -364,7 +364,6 @@ export default function Home() {
 
     if (error) {
       setError(error.message);
-
       return;
     }
 
@@ -393,6 +392,10 @@ export default function Home() {
 
     setDocument(target);
     setEditing(false);
+
+    setSearchText("");
+    setSearchResults([]);
+    setShowSuggestions(false);
 
     await loadChildDocuments(target.slug);
 
@@ -495,7 +498,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // OPEN CREATE DOCUMENT
+  // OPEN NEW DOCUMENT
   // =====================================================
 
   function openCreateDocument() {
@@ -508,7 +511,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // OPEN CREATE CHILD DOCUMENT
+  // OPEN CHILD DOCUMENT
   // =====================================================
 
   function openCreateChildDocument() {
@@ -521,6 +524,10 @@ export default function Home() {
     setCreatingChild(true);
     setCreating(true);
   }
+
+  // =====================================================
+  // CLOSE CREATE MODAL
+  // =====================================================
 
   function closeCreateDocument() {
     if (creatingDocument) return;
@@ -540,13 +547,11 @@ export default function Home() {
 
     if (!title) {
       alert("문서 제목을 입력해주세요.");
-
       return;
     }
 
     if (!slug) {
       alert("slug를 입력해주세요.");
-
       return;
     }
 
@@ -560,13 +565,15 @@ export default function Home() {
 
     if (creatingChild && !document) {
       alert("부모 문서를 찾을 수 없습니다.");
-
       return;
     }
 
     setCreatingDocument(true);
 
-    // slug 중복 확인
+    // ===================================================
+    // SLUG 중복 확인
+    // ===================================================
+
     const {
       data: existing,
       error: checkError,
@@ -598,7 +605,7 @@ export default function Home() {
     }
 
     // ===================================================
-    // 부모 slug 결정
+    // PARENT SLUG
     // ===================================================
 
     const parentSlug =
@@ -606,15 +613,16 @@ export default function Home() {
         ? document.slug
         : null;
 
+    // ===================================================
+    // INSERT
+    // ===================================================
+
     const { data, error } = await supabase
       .from("documents")
       .insert({
         title,
         slug,
         content,
-
-        // 하위 문서면 현재 문서 slug
-        // 일반 문서면 null
         parent_slug: parentSlug,
       })
       .select("*");
@@ -642,6 +650,10 @@ export default function Home() {
 
     const created = data[0];
 
+    // ===================================================
+    // FINISH
+    // ===================================================
+
     setCreating(false);
     setCreatingChild(false);
     setCreatingDocument(false);
@@ -664,7 +676,6 @@ export default function Home() {
     setDocument(created);
     setEditing(false);
 
-    // 새로 만든 문서의 하위 문서도 불러오기
     await loadChildDocuments(
       created.slug
     );
@@ -676,7 +687,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // OPEN CHILD DOCUMENT
+  // OPEN CHILD
   // =====================================================
 
   async function openChildDocument(child) {
@@ -702,7 +713,7 @@ export default function Home() {
 
     return lines.map((line, index) => {
       // -------------------------------
-      // ## 제목
+      // HEADINGS
       // -------------------------------
 
       const headingMatch =
@@ -717,7 +728,8 @@ export default function Home() {
         const title =
           headingMatch[2].trim();
 
-        const id = `heading-${index}`;
+        const id =
+          `heading-${index}`;
 
         if (level === 2) {
           return (
@@ -743,7 +755,7 @@ export default function Home() {
       }
 
       // -------------------------------
-      // 빈 줄
+      // EMPTY LINE
       // -------------------------------
 
       if (line === "") {
@@ -756,7 +768,7 @@ export default function Home() {
       }
 
       // -------------------------------
-      // [[문서명]]
+      // WIKI LINKS
       // -------------------------------
 
       const parts =
@@ -820,11 +832,13 @@ export default function Home() {
         className={`wiki-app theme-${theme}`}
       >
         <div className="loading-screen">
+
           <div className="loading-dot" />
 
           <p>
             여름위키 불러오는 중...
           </p>
+
         </div>
       </main>
     );
@@ -840,6 +854,7 @@ export default function Home() {
         className={`wiki-app theme-${theme}`}
       >
         <div className="error-screen">
+
           <div className="error-box">
 
             <div className="error-icon">
@@ -850,7 +865,9 @@ export default function Home() {
               문서를 불러오지 못했어요
             </h1>
 
-            <p>{error}</p>
+            <p>
+              {error}
+            </p>
 
             <button
               type="button"
@@ -861,6 +878,7 @@ export default function Home() {
             </button>
 
           </div>
+
         </div>
       </main>
     );
@@ -884,6 +902,8 @@ export default function Home() {
       <header className="header">
 
         <div className="header-inner">
+
+          {/* LOGO */}
 
           <button
             type="button"
@@ -946,7 +966,7 @@ export default function Home() {
             </div>
 
 
-            {/* SEARCH SUGGESTIONS */}
+            {/* SUGGESTIONS */}
 
             {showSuggestions &&
               searchText.trim() && (
@@ -995,6 +1015,7 @@ export default function Home() {
                     </>
                   ) : !searching ? (
                     <div className="no-search-result">
+
                       <div>
                         🔎
                       </div>
@@ -1002,6 +1023,7 @@ export default function Home() {
                       <span>
                         검색 결과가 없습니다.
                       </span>
+
                     </div>
                   ) : null}
 
@@ -1116,7 +1138,7 @@ export default function Home() {
                     e.target.value
                   )
                 }
-                placeholder="예: 괴산오성중학교"
+                placeholder="예: 역사"
               />
 
 
@@ -1184,7 +1206,9 @@ export default function Home() {
               <button
                 type="button"
                 className="save-button"
-                onClick={createDocument}
+                onClick={
+                  createDocument
+                }
                 disabled={
                   creatingDocument
                 }
@@ -1205,7 +1229,7 @@ export default function Home() {
 
 
       {/* =================================================
-          PAGE
+          MAIN PAGE
       ================================================= */}
 
       <div className="page-container">
@@ -1312,17 +1336,21 @@ export default function Home() {
             <div className="document-divider" />
 
 
-            {/* EDITOR */}
+            {/* EDITOR / CONTENT */}
 
             {editing ? (
+
               <div className="editor-area">
 
                 <div className="editor-help">
+
                   💡 문서 연결:{" "}
                   <strong>
                     [[문서명]]
                   </strong>
+
                   <br />
+
                   💡 목차:{" "}
                   <strong>
                     ## 제목
@@ -1331,6 +1359,7 @@ export default function Home() {
                   <strong>
                     ### 소제목
                   </strong>
+
                 </div>
 
                 <textarea
@@ -1351,15 +1380,119 @@ export default function Home() {
                 )}
 
               </div>
+
             ) : (
+
               <div className="document-content">
                 {renderContent(
                   document.content
                 )}
               </div>
+
             )}
 
           </article>
+
+
+          {/* =================================================
+              MAIN CHILD DOCUMENT AREA
+          ================================================= */}
+
+          <section className="child-documents-main">
+
+            <div className="child-documents-main-header">
+
+              <div>
+
+                <div className="document-label">
+                  CHILD DOCUMENTS
+                </div>
+
+                <h2>
+                  하위 문서
+                </h2>
+
+              </div>
+
+              <button
+                type="button"
+                className="child-document-main-create"
+                onClick={
+                  openCreateChildDocument
+                }
+              >
+                ＋ 하위 문서 만들기
+              </button>
+
+            </div>
+
+
+            {loadingChildren ? (
+
+              <div className="child-document-main-empty">
+                하위 문서를 불러오는 중...
+              </div>
+
+            ) : childDocuments.length > 0 ? (
+
+              <div className="child-document-main-list">
+
+                {childDocuments.map(
+                  (child) => (
+
+                    <button
+                      key={child.id}
+                      type="button"
+                      className="child-document-main-item"
+                      onClick={() =>
+                        openChildDocument(
+                          child
+                        )
+                      }
+                    >
+
+                      <span>
+                        📄
+                      </span>
+
+                      <strong>
+                        {child.title}
+                      </strong>
+
+                      <small>
+                        {child.slug}
+                      </small>
+
+                      <span>
+                        ›
+                      </span>
+
+                    </button>
+
+                  )
+                )}
+
+              </div>
+
+            ) : (
+
+              <div className="child-document-main-empty">
+
+                아직 하위 문서가 없습니다.
+
+                <br />
+
+                아래의
+                <strong>
+                  ＋ 하위 문서 만들기
+                </strong>
+                버튼으로 만들어보세요.
+
+              </div>
+
+            )}
+
+          </section>
 
         </div>
 
@@ -1370,24 +1503,28 @@ export default function Home() {
 
         <aside className="sidebar">
 
+
           {/* CHILD DOCUMENTS */}
 
-          <div className="sidebar-card child-document-card">
+          <div className="sidebar-card">
 
             <div className="sidebar-title">
               하위 문서
             </div>
 
             {loadingChildren ? (
-              <div className="child-document-loading">
+
+              <div className="no-child-documents">
                 불러오는 중...
               </div>
-            ) : childDocuments.length >
-              0 ? (
+
+            ) : childDocuments.length > 0 ? (
+
               <div className="child-document-list">
 
                 {childDocuments.map(
                   (child) => (
+
                     <button
                       key={child.id}
                       type="button"
@@ -1398,7 +1535,8 @@ export default function Home() {
                         )
                       }
                     >
-                      <span className="child-document-icon">
+
+                      <span>
                         📄
                       </span>
 
@@ -1406,18 +1544,23 @@ export default function Home() {
                         {child.title}
                       </span>
 
-                      <span className="child-document-arrow">
+                      <span>
                         ›
                       </span>
+
                     </button>
+
                   )
                 )}
 
               </div>
+
             ) : (
+
               <div className="no-child-documents">
                 아직 하위 문서가 없습니다.
               </div>
+
             )}
 
             <button
@@ -1436,6 +1579,7 @@ export default function Home() {
           {/* TOC */}
 
           {headings.length > 0 && (
+
             <div className="sidebar-card toc-card">
 
               <div className="sidebar-title">
@@ -1446,6 +1590,7 @@ export default function Home() {
 
                 {headings.map(
                   (heading) => (
+
                     <button
                       key={heading.id}
                       type="button"
@@ -1458,12 +1603,14 @@ export default function Home() {
                     >
                       {heading.title}
                     </button>
+
                   )
                 )}
 
               </div>
 
             </div>
+
           )}
 
 
@@ -1480,8 +1627,7 @@ export default function Home() {
               onClick={() =>
                 window.scrollTo({
                   top: 0,
-                  behavior:
-                    "smooth",
+                  behavior: "smooth",
                 })
               }
             >
@@ -1489,6 +1635,7 @@ export default function Home() {
             </button>
 
             {!editing && (
+
               <button
                 type="button"
                 onClick={
@@ -1497,11 +1644,13 @@ export default function Home() {
               >
                 ✎ 문서 수정
               </button>
+
             )}
 
             <button
               type="button"
               onClick={() => {
+
                 navigator.clipboard?.writeText(
                   window.location.href
                 );
@@ -1509,6 +1658,7 @@ export default function Home() {
                 alert(
                   "문서 링크를 복사했습니다."
                 );
+
               }}
             >
               🔗 링크 복사

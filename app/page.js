@@ -8,6 +8,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // 테마
   const [theme, setTheme] = useState("pink");
 
   // 수정
@@ -33,7 +34,7 @@ export default function Home() {
   const searchTimer = useRef(null);
 
   // =====================================================
-  // URL
+  // URL에서 slug 가져오기
   // =====================================================
 
   function getSlugFromUrl() {
@@ -150,15 +151,11 @@ export default function Home() {
   }
 
   async function handleSearchKeyDown(e) {
-    if (e.key !== "Enter") {
-      return;
-    }
+    if (e.key !== "Enter") return;
 
     e.preventDefault();
 
-    if (!searchText.trim()) {
-      return;
-    }
+    if (!searchText.trim()) return;
 
     if (searchResults.length > 0) {
       await openSearchResult(searchResults[0]);
@@ -199,9 +196,7 @@ export default function Home() {
         : `/?doc=${encodeURIComponent(target.slug)}`;
 
     window.history.pushState(
-      {
-        slug: target.slug,
-      },
+      { slug: target.slug },
       "",
       url
     );
@@ -222,7 +217,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // [[문서명]]
+  // [[문서명]] 링크
   // =====================================================
 
   async function openWikiDocument(title) {
@@ -250,9 +245,7 @@ export default function Home() {
         : `/?doc=${encodeURIComponent(target.slug)}`;
 
     window.history.pushState(
-      {
-        slug: target.slug,
-      },
+      { slug: target.slug },
       "",
       url
     );
@@ -267,18 +260,14 @@ export default function Home() {
   }
 
   // =====================================================
-  // 메인
+  // 메인으로
   // =====================================================
 
   function goHome() {
-    if (document?.slug === "main") {
-      return;
-    }
+    if (document?.slug === "main") return;
 
     window.history.pushState(
-      {
-        slug: "main",
-      },
+      { slug: "main" },
       "",
       "/"
     );
@@ -287,13 +276,11 @@ export default function Home() {
   }
 
   // =====================================================
-  // 수정
+  // 수정 시작
   // =====================================================
 
   function startEditing() {
-    if (!document) {
-      return;
-    }
+    if (!document) return;
 
     setEditTitle(document.title || "");
     setEditContent(document.content || "");
@@ -301,15 +288,21 @@ export default function Home() {
     setEditing(true);
   }
 
+  // =====================================================
+  // 수정 취소
+  // =====================================================
+
   function cancelEditing() {
     setEditing(false);
     setSaveMessage("");
   }
 
+  // =====================================================
+  // 문서 저장
+  // =====================================================
+
   async function saveDocument() {
-    if (!document) {
-      return;
-    }
+    if (!document) return;
 
     if (!editTitle.trim()) {
       setSaveMessage("문서 제목을 입력해주세요.");
@@ -365,9 +358,7 @@ export default function Home() {
   }
 
   function closeCreateDocument() {
-    if (creatingDocument) {
-      return;
-    }
+    if (creatingDocument) return;
 
     setCreating(false);
   }
@@ -451,9 +442,7 @@ export default function Home() {
       `/?doc=${encodeURIComponent(created.slug)}`;
 
     window.history.pushState(
-      {
-        slug: created.slug,
-      },
+      { slug: created.slug },
       "",
       url
     );
@@ -468,13 +457,11 @@ export default function Home() {
   }
 
   // =====================================================
-  // 본문
+  // 본문 렌더링
   // =====================================================
 
   function renderContent(content) {
-    if (!content) {
-      return null;
-    }
+    if (!content) return null;
 
     const parts = content.split(/(\[\[.*?\]\])/g);
 
@@ -510,9 +497,11 @@ export default function Home() {
 
   if (loading) {
     return (
-      <main className="loading-screen">
-        <div className="loading-dot" />
-        <p>여름위키 불러오는 중...</p>
+      <main className={`wiki-app theme-${theme}`}>
+        <div className="loading-screen">
+          <div className="loading-dot" />
+          <p>여름위키 불러오는 중...</p>
+        </div>
       </main>
     );
   }
@@ -523,40 +512,42 @@ export default function Home() {
 
   if (error) {
     return (
-      <main className="error-screen">
-        <div className="error-box">
-          <div className="error-icon">
-            ⚠️
+      <main className={`wiki-app theme-${theme}`}>
+        <div className="error-screen">
+          <div className="error-box">
+
+            <div className="error-icon">
+              ⚠️
+            </div>
+
+            <h1>
+              문서를 불러오지 못했어요
+            </h1>
+
+            <p>{error}</p>
+
+            <button
+              type="button"
+              className="back-button"
+              onClick={goHome}
+            >
+              메인으로 돌아가기
+            </button>
+
           </div>
-
-          <h1>
-            문서를 불러오지 못했어요
-          </h1>
-
-          <p>{error}</p>
-
-          <button
-            type="button"
-            className="back-button"
-            onClick={goHome}
-          >
-            메인으로 돌아가기
-          </button>
         </div>
       </main>
     );
   }
 
-  if (!document) {
-    return null;
-  }
+  if (!document) return null;
 
   // =====================================================
   // 화면
   // =====================================================
 
   return (
-    <main className="wiki-app">
+    <main className={`wiki-app theme-${theme}`}>
 
       {/* ================= HEADER ================= */}
 
@@ -598,9 +589,7 @@ export default function Home() {
                     e.target.value
                   )
                 }
-                onKeyDown={
-                  handleSearchKeyDown
-                }
+                onKeyDown={handleSearchKeyDown}
                 onFocus={() => {
                   if (searchText.trim()) {
                     setShowSuggestions(true);
@@ -679,7 +668,7 @@ export default function Home() {
           </div>
 
 
-          {/* 새 문서 버튼 */}
+          {/* 새 문서 */}
 
           <button
             type="button"
@@ -695,6 +684,11 @@ export default function Home() {
           <button
             type="button"
             className="theme-toggle"
+            title={
+              theme === "pink"
+                ? "소라색 테마로 변경"
+                : "연핑크 테마로 변경"
+            }
             onClick={() => {
               setTheme(
                 theme === "pink"
@@ -713,7 +707,7 @@ export default function Home() {
       </header>
 
 
-      {/* ================= 새 문서 창 ================= */}
+      {/* ================= 새 문서 ================= */}
 
       {creating && (
         <div className="new-document-overlay">
@@ -723,6 +717,7 @@ export default function Home() {
             <div className="new-document-header">
 
               <div>
+
                 <div className="document-label">
                   NEW WIKI DOCUMENT
                 </div>
@@ -730,6 +725,7 @@ export default function Home() {
                 <h2>
                   새 문서 만들기
                 </h2>
+
               </div>
 
               <button

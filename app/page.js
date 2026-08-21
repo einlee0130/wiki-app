@@ -33,7 +33,7 @@ export default function Home() {
   const searchTimer = useRef(null);
 
   // =====================================================
-  // URL에서 slug 가져오기
+  // URL
   // =====================================================
 
   function getSlugFromUrl() {
@@ -79,7 +79,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // 최초 실행 + 뒤로가기
+  // 최초 실행 / 뒤로가기
   // =====================================================
 
   useEffect(() => {
@@ -87,7 +87,6 @@ export default function Home() {
 
     function handlePopState(event) {
       const slug = event.state?.slug || getSlugFromUrl();
-
       loadDocument(slug);
     }
 
@@ -99,7 +98,7 @@ export default function Home() {
   }, []);
 
   // =====================================================
-  // 검색어 변경
+  // 검색
   // =====================================================
 
   function handleSearchChange(value) {
@@ -124,10 +123,6 @@ export default function Home() {
     }, 250);
   }
 
-  // =====================================================
-  // 검색
-  // =====================================================
-
   async function searchDocuments(keyword) {
     const { data, error } = await supabase
       .from("documents")
@@ -136,8 +131,7 @@ export default function Home() {
       .limit(8);
 
     if (error) {
-      console.error("검색 오류:", error);
-
+      console.error(error);
       setSearchResults([]);
       setSearching(false);
       return;
@@ -147,10 +141,6 @@ export default function Home() {
     setSearching(false);
   }
 
-  // =====================================================
-  // 검색 결과 클릭
-  // =====================================================
-
   async function openSearchResult(result) {
     setSearchText("");
     setSearchResults([]);
@@ -158,10 +148,6 @@ export default function Home() {
 
     await navigateToDocument(result.slug);
   }
-
-  // =====================================================
-  // 검색창 Enter
-  // =====================================================
 
   async function handleSearchKeyDown(e) {
     if (e.key !== "Enter") {
@@ -236,7 +222,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // [[문서명]] 링크
+  // [[문서명]]
   // =====================================================
 
   async function openWikiDocument(title) {
@@ -281,7 +267,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // 메인으로
+  // 메인
   // =====================================================
 
   function goHome() {
@@ -301,7 +287,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // 수정 시작
+  // 수정
   // =====================================================
 
   function startEditing() {
@@ -315,18 +301,10 @@ export default function Home() {
     setEditing(true);
   }
 
-  // =====================================================
-  // 수정 취소
-  // =====================================================
-
   function cancelEditing() {
     setEditing(false);
     setSaveMessage("");
   }
-
-  // =====================================================
-  // 문서 저장
-  // =====================================================
 
   async function saveDocument() {
     if (!document) {
@@ -350,10 +328,8 @@ export default function Home() {
       .eq("id", document.id)
       .select("*");
 
-    console.log("UPDATE RESULT:", data);
-    console.log("UPDATE ERROR:", error);
-
     if (error) {
+      console.error(error);
       setSaveMessage(`저장 실패: ${error.message}`);
       setSaving(false);
       return;
@@ -378,7 +354,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // 새 문서 창 열기
+  // 새 문서
   // =====================================================
 
   function openCreateDocument() {
@@ -388,10 +364,6 @@ export default function Home() {
     setCreating(true);
   }
 
-  // =====================================================
-  // 새 문서 창 닫기
-  // =====================================================
-
   function closeCreateDocument() {
     if (creatingDocument) {
       return;
@@ -399,10 +371,6 @@ export default function Home() {
 
     setCreating(false);
   }
-
-  // =====================================================
-  // 새 문서 생성
-  // =====================================================
 
   async function createDocument() {
     const title = newTitle.trim();
@@ -428,7 +396,6 @@ export default function Home() {
 
     setCreatingDocument(true);
 
-    // slug 중복 확인
     const { data: existing, error: checkError } =
       await supabase
         .from("documents")
@@ -438,23 +405,17 @@ export default function Home() {
 
     if (checkError) {
       console.error(checkError);
-
-      alert(
-        "문서 확인 실패: " + checkError.message
-      );
-
+      alert("문서 확인 실패: " + checkError.message);
       setCreatingDocument(false);
       return;
     }
 
     if (existing && existing.length > 0) {
       alert("이미 존재하는 slug입니다.");
-
       setCreatingDocument(false);
       return;
     }
 
-    // 문서 생성
     const { data, error } = await supabase
       .from("documents")
       .insert({
@@ -464,23 +425,15 @@ export default function Home() {
       })
       .select("*");
 
-    console.log("INSERT RESULT:", data);
-    console.log("INSERT ERROR:", error);
-
     if (error) {
       console.error(error);
-
-      alert(
-        "문서 생성 실패: " + error.message
-      );
-
+      alert("문서 생성 실패: " + error.message);
       setCreatingDocument(false);
       return;
     }
 
     if (!data || data.length === 0) {
       alert("문서가 생성되지 않았습니다.");
-
       setCreatingDocument(false);
       return;
     }
@@ -515,7 +468,7 @@ export default function Home() {
   }
 
   // =====================================================
-  // 본문에서 [[문서명]] 처리
+  // 본문
   // =====================================================
 
   function renderContent(content) {
@@ -726,6 +679,17 @@ export default function Home() {
           </div>
 
 
+          {/* 새 문서 버튼 */}
+
+          <button
+            type="button"
+            className="new-document-top-button"
+            onClick={openCreateDocument}
+          >
+            ＋ 새 문서
+          </button>
+
+
           {/* 테마 */}
 
           <button
@@ -875,8 +839,6 @@ export default function Home() {
 
         <div className="content">
 
-          {/* breadcrumb */}
-
           <div className="breadcrumb">
 
             <button
@@ -894,8 +856,6 @@ export default function Home() {
 
           </div>
 
-
-          {/* document */}
 
           <article className="document">
 
@@ -967,8 +927,6 @@ export default function Home() {
             <div className="document-divider" />
 
 
-            {/* 본문 / 편집 */}
-
             {editing ? (
               <div className="editor-area">
 
@@ -1037,10 +995,9 @@ export default function Home() {
             <button
               type="button"
               onClick={() => {
-                navigator.clipboard
-                  ?.writeText(
-                    window.location.href
-                  );
+                navigator.clipboard?.writeText(
+                  window.location.href
+                );
 
                 alert(
                   "문서 링크를 복사했습니다."
